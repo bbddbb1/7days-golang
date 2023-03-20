@@ -62,11 +62,11 @@ func foo(xc *xclient.XClient, ctx context.Context, typ, serviceMethod string, ar
 
 func call(registry string) {
 	d := xclient.NewGeeRegistryDiscovery(registry, 0)
-	xc := xclient.NewXClient(d, xclient.RandomSelect, nil)
+	xc := xclient.NewXClient(d, xclient.ConsistentHashSelect, nil)
 	defer func() { _ = xc.Close() }()
 	// send request & receive response
 	var wg sync.WaitGroup
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 50; i++ {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
@@ -103,7 +103,8 @@ func main() {
 	wg.Wait()
 
 	time.Sleep(time.Second)
-	wg.Add(2)
+	wg.Add(3)
+	go startServer(registryAddr, &wg)
 	go startServer(registryAddr, &wg)
 	go startServer(registryAddr, &wg)
 	wg.Wait()

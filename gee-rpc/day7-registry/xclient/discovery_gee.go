@@ -21,6 +21,8 @@ func (d *GeeRegistryDiscovery) Update(servers []string) error {
 	defer d.mu.Unlock()
 	d.servers = servers
 	d.lastUpdate = time.Now()
+	d.c = NewConsistentHash(10, nil)
+	d.c.Add(servers...)
 	return nil
 }
 
@@ -43,6 +45,8 @@ func (d *GeeRegistryDiscovery) Refresh() error {
 			d.servers = append(d.servers, strings.TrimSpace(server))
 		}
 	}
+	d.c = NewConsistentHash(10, nil)
+	d.c.Add(servers...)
 	d.lastUpdate = time.Now()
 	return nil
 }
